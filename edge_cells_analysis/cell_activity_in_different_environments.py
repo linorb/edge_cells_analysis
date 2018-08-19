@@ -171,14 +171,14 @@ def find_env_edge_cells(events, movement):
 
 
 def plot_mouse_summary(number_of_edge_cells_a, number_of_edge_cells_b, 
-                       unique_edge_cells, edge_cells_corr, mouse_name):
+                       unique_edge_cells, edge_cells_high_corr_fraction, mouse_name):
     f, axx = plt.subplots(1, 2)
     axx[0].scatter(number_of_edge_cells_a, number_of_edge_cells_b)
     axx[0].set_xlabel('number of edge cells environment a', fontsize=18)
     axx[0].set_ylabel('number of edge cells environment b', fontsize=18)
     axx[0].set_title('Number of edge cells', fontsize=18)
     
-    axx[1].scatter(unique_edge_cells, edge_cells_corr)
+    axx[1].scatter(unique_edge_cells, edge_cells_high_corr_fraction)
     axx[1].set_xlabel('Number of unique edge cells', fontsize=18)
     axx[1].set_ylabel('Fraction of high correlation (>0.65) cells', fontsize=18)
     axx[1].set_title('High correlation edge cells', fontsize=18)
@@ -189,13 +189,28 @@ def plot_mouse_summary(number_of_edge_cells_a, number_of_edge_cells_b,
     return
 
 
+def plot_all_mice_summary(mice_summary_data):
+    mice_names = list(mice_summary_data.keys())
+    test_names = list(mice_summary_data[mice_names[0]].keys())
+    f, axx = plt.subplots(2, 2)
+    for ax, test in zip(axx.reshape(-1), test_names):
+        data = [np.array(mice_summary_data[mouse][test]) for mouse in mice_names]
+        ax.boxplot(data)
+        ax.set_title(test, fontsize=18)
+        ax.set_xticklabels(mice_names, fontsize=16)
+    f.suptitle('Mice edge cells summary')
+
+    return
+
+
 def main():
+    mice_data = dict.fromkeys(MICE)
     for mouse in MICE:
         print mouse
         number_of_edge_cells_a = []
         number_of_edge_cells_b = []
         unique_edge_cells = []
-        edge_cells_corr = []
+        edge_cells_high_corr_fraction = []
         for day in DAYS:
             print "day %d" % day
             try:
@@ -226,8 +241,9 @@ def main():
                     title = "Cell no. %d" % cell
                     cell_activity_a = flat_events_a[cell, :]
                     cell_activity_b = flat_events_b[cell, :]
-                    # plot_comparison_of_two_sessions(cell_activity_a, flat_bins_a,
-                    #                                 cell_activity_b, flat_bins_b, title)
+                    # plot_comparison_of_two_sessions(
+                    #   cell_activity_a, flat_bins_a,cell_activity_b,
+                    #   flat_bins_b, title)
                     n_a, n_b = \
                         plot_hist_comparison(cell_activity_a, flat_bins_a,
                                                      cell_activity_b, flat_bins_b, title)
@@ -240,22 +256,28 @@ def main():
                 number_of_edge_cells_a.append(len(edge_cells_a))
                 number_of_edge_cells_b.append(len(edge_cells_b))
                 unique_edge_cells.append(len(all_edge_cells))
-                edge_cells_corr.append(np.sum(np.array(
+                edge_cells_high_corr_fraction.append(np.sum(np.array(
                     cells_corr) > 0.65)/np.float(len(all_edge_cells)))
                 print "number of edge cells in environment A: %d" % len(edge_cells_a)
                 print "number of edge cells in environment B: %d" % len(edge_cells_b)
                 print "number of unique edge cells: %d" % len(all_edge_cells)
-                print "Fraction of edge cells above 0.65 correlation: %f" % edge_cells_corr[-1]
+                print "Fraction of edge cells above 0.65 correlation: %f" % edge_cells_high_corr_fraction[-1]
                 plt.close('all')
             
             except Exception as e:
                 print "Error in day %d" % day
                 import pdb; pdb.set_trace()
-               
-        plot_mouse_summary(number_of_edge_cells_a, number_of_edge_cells_b, 
-            unique_edge_cells, edge_cells_corr, mouse)
+
+        mice_data[mouse] = {'Edge cells A': number_of_edge_cells_a,
+                            'Edge cells B': number_of_edge_cells_b,
+                            'All edge cells': unique_edge_cells,
+                            'High correlation edge cells fraction':
+                                edge_cells_high_corr_fraction}
+
         
         raw_input('press enter')
-        
+
+    plot_all_mice_summary(mice_data)
+
 if __name__ == '__main__':
     main()
