@@ -163,14 +163,18 @@ def plot_tuning_curve_comparison(cell_events_a, bins_a, cell_events_b,
 
 
 def find_env_edge_cells(events, movement,
-                        min_number_of_events=MIN_NUMBER_OF_EVENTS):
+                        min_number_of_events=MIN_NUMBER_OF_EVENTS,
+                        velocity_threshold=5):
     trial_bins = []
+    trial_velocity = []
     for trial in movement:
         trial_bins.append(trial['bin'][1:])
+        trial_velocity.append(trial['velocity'][1:])
 
     return find_edge_cells(
         events, trial_bins, min_number_of_events, EDGE_THRESHOLD,
-        edge_bins=EDGE_BINS, frame_rate=FRAME_RATE)
+        edge_bins=EDGE_BINS, frame_rate=FRAME_RATE,
+        trials_velocity=trial_velocity, velocity_threshold=velocity_threshold)
 
 
 def plot_mouse_summary(number_of_edge_cells_a, number_of_edge_cells_b, 
