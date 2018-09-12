@@ -19,7 +19,8 @@ CELL_REGISTRATION_PATH = \
     R"D:\dev\replays\work_data\two_environments"
 
 
-def load_two_env_session(session_path, session_ind=np.nan, cell_registration=[]):
+def load_two_env_session(session_path, session_ind=np.nan,
+                         cell_registration=[], wide_bin=True):
     """Load session. output:
     linear_trials_events: A list of events matrices, where each element contains
         the events matrix of a single trial (ordered by their index)
@@ -48,10 +49,11 @@ def load_two_env_session(session_path, session_ind=np.nan, cell_registration=[])
     movement_data = matlab.load_mvmt_file(
         os.path.join(session_path, behavior_filename))[1:]
     # widening the bins - to create a total of 12 bins instead of 24
-    for trial_behavior in movement_data:
-        wider_bins = activity_loading.wide_binning(
-            trial_behavior['bin'], 24, 2)
-        trial_behavior['bin'] = wider_bins
+    if wide_bin:
+        for trial_behavior in movement_data:
+            wider_bins = activity_loading.wide_binning(
+                trial_behavior['bin'], 24, 2)
+            trial_behavior['bin'] = wider_bins
 
     return linear_trials_events, movement_data
 
