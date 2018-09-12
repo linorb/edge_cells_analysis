@@ -162,13 +162,14 @@ def plot_tuning_curve_comparison(cell_events_a, bins_a, cell_events_b,
     return tuning_curve_a, tuning_curve_b
 
 
-def find_env_edge_cells(events, movement):
+def find_env_edge_cells(events, movement,
+                        min_number_of_events=MIN_NUMBER_OF_EVENTS):
     trial_bins = []
     for trial in movement:
         trial_bins.append(trial['bin'][1:])
 
     return find_edge_cells(
-        events, trial_bins, MIN_NUMBER_OF_EVENTS, EDGE_THRESHOLD,
+        events, trial_bins, min_number_of_events, EDGE_THRESHOLD,
         edge_bins=EDGE_BINS, frame_rate=FRAME_RATE)
 
 
